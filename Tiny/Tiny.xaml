@@ -9,13 +9,24 @@
         mc:Ignorable="d"
         WindowStyle="None" AllowsTransparency="True" Opacity="0.7"
         MouseLeftButtonDown="OnMouseLeftButtonDown"
-        Title="Emoji.Wpf Tiny" Width="600" Height="200">
+        Title="Emoji.Wpf Tiny" Width="200" Height="500">
 
     <Window.Resources>
-        <clr:String x:Key="SampleText">Hi👨🏻‍👩🏿‍👧🏽‍👦🏽‍👦🏿lol</clr:String>
+        <clr:String x:Key="SampleText">Himoma🤮 🤢🥳😒🤯🤢🤪lol</clr:String>
+        <clr:String x:Key="old">Hi👨🏻‍👩🏿‍👧🏽‍👦🏽‍👦🏿lol</clr:String>
     </Window.Resources>
-
-    <emoji:TextBlock FontSize="120" Text="{StaticResource SampleText}"
+    <StackPanel>
+        <emoji:TextBoxZ FontSize="24" Text="{StaticResource SampleText}" HorizontalContentAlignment="Left" VerticalContentAlignment="Top"
                      FontFamily="Segoe UI Emoji, Segoe UI, Arial" TextWrapping="Wrap"
-                     VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                     Margin="0" Padding="0" VerticalAlignment="Top" Block.LineHeight="2" HorizontalAlignment="Left"/>
+        <emoji:TextBlock FontSize="24" Text="{StaticResource SampleText}"
+                     FontFamily="Segoe UI Emoji, Segoe UI, Arial" TextWrapping="Wrap"
+                     Margin="0" Padding="0" VerticalAlignment="Top" Block.LineHeight="2" HorizontalAlignment="Left" Width="171"/>
+        <TextBox FontSize="24" Text="{StaticResource SampleText}" HorizontalContentAlignment="Left" VerticalContentAlignment="Top"
+                     FontFamily="Segoe UI Emoji, Segoe UI, Arial" TextWrapping="Wrap"
+                     Margin="0" Padding="0" VerticalAlignment="Top" Block.LineHeight="2" HorizontalAlignment="Left" Width="190"/>
+        <emoji:TextBox FontSize="24" Text="{StaticResource SampleText}" HorizontalContentAlignment="Left" VerticalContentAlignment="Top"
+                     FontFamily="Segoe UI Emoji, Segoe UI, Arial" TextWrapping="Wrap"
+                     Margin="0" Padding="0" VerticalAlignment="Top" Block.LineHeight="2" HorizontalAlignment="Left"/>
+    </StackPanel>
 </Window>

@@ -129,7 +129,7 @@ namespace Emoji.Wpf
                 // FIXME: width may be < 0 (reproduced on Windows 8), investigate one day
                 width = Math.Max(width, 0);
             }
-            height = font.Height;
+            height = font.Height * 0.85;
 
             // Clip to the render area, and draw a transparent rectangle to avoid
             // automatic resizing. See https://stackoverflow.com/a/8824459/111461
@@ -143,8 +143,8 @@ namespace Emoji.Wpf
             foreach (var t in glyphplanlist.WithPreviousAndNext())
             {
                 var g = t.Current;
-                var xpos = (startx + g.OffsetX) * scale;
-                var ypos = font.Baseline + g.OffsetY * scale;
+                var xpos = 0.1 + (startx + g.OffsetX) * scale;
+                var ypos = font.Baseline - 0.2 + (g.OffsetY) * scale;
                 double ds = 1.0;
 
                 if (g.glyphIndex == font.ZwjGlyph)

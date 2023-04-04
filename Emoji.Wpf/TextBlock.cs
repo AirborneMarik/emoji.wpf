@@ -11,12 +11,14 @@
 //
 
 using Stfu.Linq;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media;
 
 using Controls = System.Windows.Controls;
@@ -28,6 +30,12 @@ namespace Emoji.Wpf
     /// </summary>
     public class TextBlock : Controls.TextBlock, IEmojiControl
     {
+        TextPointer StartSelectPosition;
+        TextPointer EndSelectPosition;
+        public String SelectedText = "";
+
+        public delegate void TextSelectedHandler(string SelectedText);
+        public event TextSelectedHandler TextSelected;
         static TextBlock()
         {
             TextProperty.OverrideMetadata(typeof(TextBlock), new FrameworkPropertyMetadata(
@@ -74,7 +82,53 @@ namespace Emoji.Wpf
         /// </summary>
         public static new readonly DependencyProperty TextProperty =
             DependencyProperty.Register(nameof(Text), typeof(string), typeof(TextBlock));
+        /*
+        protected override void OnPreviewMouseLeftButtonDown(MouseButtonEventArgs e)
+        {
+            base.OnPreviewMouseLeftButtonDown(e);
+            if (e.ClickCount == 2)
+            {
+                StartSelectPosition = this.ContentStart;
+                EndSelectPosition = this.ContentEnd;
+                TextRange ntr = new TextRange(StartSelectPosition, EndSelectPosition);
+                ntr.ApplyPropertyValue(TextElement.ForegroundProperty, new SolidColorBrush(Colors.GreenYellow));
+                
+                SelectedText = Text;
+                if (!(TextSelected == null))
+                {
+                    TextSelected(SelectedText);
+                }
+                e.Handled = true;
+            }
+        }
 
+        
+        protected override void OnMouseDown(MouseButtonEventArgs e)
+        {
+            base.OnMouseDown(e);
+            Point mouseDownPoint = e.GetPosition(this);
+            StartSelectPosition = this.GetPositionFromPoint(mouseDownPoint, true);
+        }
+
+        protected override void OnMouseUp(MouseButtonEventArgs e)
+        {
+            base.OnMouseUp(e);
+            Point mouseUpPoint = e.GetPosition(this);
+            EndSelectPosition = this.GetPositionFromPoint(mouseUpPoint, true);
+
+            TextRange otr = new TextRange(this.ContentStart, this.ContentEnd);
+            otr.ApplyPropertyValue(TextElement.ForegroundProperty, new SolidColorBrush(Colors.White));
+
+            TextRange ntr = new TextRange(StartSelectPosition, EndSelectPosition);
+            ntr.ApplyPropertyValue(TextElement.ForegroundProperty, new SolidColorBrush(Colors.GreenYellow));
+
+            SelectedText = ntr.Text;
+            if (!(TextSelected == null))
+            {
+                TextSelected(SelectedText);
+            }
+        }
+        */
         public bool ColorBlend
         {
             get => (bool)GetValue(ColorBlendProperty);
@@ -121,6 +175,7 @@ namespace Emoji.Wpf
 
             if (pos != text.Length)
                 Inlines.Add(text.Substring(pos));
+            Inlines.Add(" ");
         }
 
         private void OnColorBlendChanged(bool color_blend)

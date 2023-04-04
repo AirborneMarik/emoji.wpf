@@ -12,6 +12,8 @@
 
 using Stfu.Linq;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Text;
 #if DEBUG
 using System.Text.RegularExpressions;
@@ -29,6 +31,7 @@ using Controls = System.Windows.Controls;
 
 namespace Emoji.Wpf
 {
+    /*
     public sealed class TextSelection : TextRange
     {
         internal TextSelection(TextPointer start, TextPointer end)
@@ -72,14 +75,15 @@ namespace Emoji.Wpf
             }
         }
     }
-
-    public class RichTextBox : Controls.RichTextBox, IEmojiControl
+    */
+    public class TextBoxY : Controls.TextBox, IEmojiControl
     {
-        public RichTextBox()
+        InlineCollection Inlines;
+        public TextBoxY()
         {
-            CommandManager.AddPreviewExecutedHandler(this, PreviewExecuted);
+            //CommandManager.AddPreviewExecutedHandler(this, PreviewExecuted);
             SetValue(Block.LineHeightProperty, 1.0);
-            Selection = new TextSelection(Document.ContentStart, Document.ContentStart);
+            //Selection = new TextSelection(Document.ContentStart, Document.ContentStart);
         }
 
         protected override void OnSelectionChanged(RoutedEventArgs e)
@@ -89,9 +93,9 @@ namespace Emoji.Wpf
             {
                 var tmp = m_override_selection; // Prevent infinite recursion
                 m_override_selection = null;
-                base.Selection.Select(tmp.Start, tmp.End);
+                //base.Selection.Select(tmp.Start, tmp.End);
             }
-            Selection = new TextSelection(base.Selection.Start, base.Selection.End);
+            //Selection = new TextSelection(base.Selection.Start, base.Selection.End);
         }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
@@ -129,6 +133,7 @@ namespace Emoji.Wpf
         /// <param name="e"></param>
         protected override void OnPreviewDragEnter(DragEventArgs e)
         {
+            /*
             if (e.Source == Document)
             {
                 foreach (var fmt in new string[] { DataFormats.Rtf, DataFormats.Xaml, DataFormats.XamlPackage })
@@ -139,13 +144,13 @@ namespace Emoji.Wpf
                 e.Data.SetData(DataFormats.Text, text);
                 e.Data.SetData(DataFormats.UnicodeText, text);
             }
-
+            */
             base.OnPreviewDragEnter(e);
         }
-
+        /*
         private static void PreviewExecuted(object sender, ExecutedRoutedEventArgs e)
-            => (sender as RichTextBox)?.OnPreviewExecuted(e);
-
+            => (sender as TextBox)?.OnPreviewExecuted(e);
+        */
         /// <summary>
         /// Intercept some high level commands to ensure consistency.
         /// </summary>
@@ -188,69 +193,56 @@ namespace Emoji.Wpf
             */
             // FIXME: make this call lazy inside Text.get()
             //SetValue(TextProperty, new TextSelection(Document.ContentStart, Document.ContentEnd).Text);
-            SetValue(TextProperty, txt(Document));
+
             m_pending_change = false;
 #if DEBUG
             try
             {
-                var xaml = XamlWriter.Save(Document);
-                xaml = Regex.Replace(xaml, "<FlowDocument[^>]*>", "<FlowDocument>");
-                SetValue(XamlTextProperty, xaml);
+                //var xaml = XamlWriter.Save(Document);
+                //xaml = Regex.Replace(xaml, "<FlowDocument[^>]*>", "<FlowDocument>");
+                //SetValue(XamlTextProperty, xaml);
             }
             catch { }
 #endif
-        }
-
-        private string txt(FlowDocument flowDocument)
-        {
-            int numBlocks = flowDocument.Blocks.Count;
-            int i = 0;
-            string t = "";
-            foreach(Paragraph paragraph in flowDocument.Blocks)
-            {
-                i++;
-                foreach(Inline inline in paragraph.Inlines)
-                {
-                    t += new TextSelection(inline.ElementStart, inline.ElementEnd).Text;
-                }
-                if (i < numBlocks)
-                {
-                    t += "\n";
-                }
-            }
-            return t;
         }
 
         private void OnTextPropertyChanged(string text)
         {
             if (m_pending_change)
                 return;
-
-            Document.Blocks.Clear();
-            Document.Blocks.Add(new Paragraph(new Run(text)));
-            CaretPosition = Document.ContentEnd;
+            Text = text;
+            this.CaretIndex = text.Length;
+            //Document.Blocks.Clear();
+            //Document.Blocks.Add(new Paragraph(new Run(text)));
+            //CaretPosition = Document.ContentEnd;
         }
-
+        
         private void OnColorBlendChanged(bool color_blend)
             => EmojiInlines.ForAll(e => e.Foreground = color_blend ? Foreground : Brushes.Black);
-
+        
         private bool m_pending_change = false;
 
         private TextSelection m_override_selection;
 
         public new TextSelection Selection { get; private set; }
 
+        public new string Text
+        {
+            get => m_text_dpd.GetValue(this) as string;
+            set => m_text_dpd.SetValue(this, value);
+        }
+        /*
         public string Text
         {
             get => (string)GetValue(TextProperty);
             set => SetValue(TextProperty, value);
         }
-
+        
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
             nameof(Text), typeof(string), typeof(RichTextBox), new FrameworkPropertyMetadata("",
                 (o, e) => (o as RichTextBox)?.OnTextPropertyChanged(e.NewValue as string))
             { DefaultUpdateSourceTrigger = UpdateSourceTrigger.LostFocus });
-
+        */
         public bool ColonSyntax
         {
             get => (bool)GetValue(ColonSyntaxProperty);
@@ -268,11 +260,27 @@ namespace Emoji.Wpf
         }
 
         public static readonly DependencyProperty ColorBlendProperty =
+             DependencyProperty.Register(nameof(ColorBlend), typeof(bool), typeof(TextBoxY),
+                 new PropertyMetadata(false, (o, e) => (o as TextBoxY)?.OnColorBlendChanged((bool)e.NewValue)));
+
+
+        /*
+        public bool ColorBlend
+        {
+            get => (bool)GetValue(ColorBlendProperty);
+            set => SetValue(ColorBlendProperty, value);
+        }
+        
+        public static readonly DependencyProperty ColorBlendProperty =
              DependencyProperty.Register(nameof(ColorBlend), typeof(bool), typeof(RichTextBox),
                  new PropertyMetadata(false, (o, e) => (o as RichTextBox)?.OnColorBlendChanged((bool)e.NewValue)));
-
+        */
+        public IEnumerable<EmojiInline> EmojiInlines
+            => Inlines.OfType<EmojiInline>();
+        /*
         public IEnumerable<EmojiInline> EmojiInlines
         {
+            
             get
             {
                 for (var p = Document.ContentStart; p != null; p = p.GetNextContextPosition(LogicalDirection.Forward))
@@ -280,8 +288,9 @@ namespace Emoji.Wpf
                         if (p.GetAdjacentElement(LogicalDirection.Forward) is EmojiInline emoji)
                             yield return emoji;
             }
+            
         }
-
+        */
 #if DEBUG
         public string XamlText => (string)GetValue(XamlTextProperty);
 
@@ -289,5 +298,8 @@ namespace Emoji.Wpf
             nameof(XamlText), typeof(string), typeof(RichTextBox),
             new PropertyMetadata(""));
 #endif
+
+        private static readonly DependencyPropertyDescriptor m_text_dpd =
+            DependencyPropertyDescriptor.FromProperty(TextProperty, typeof(TextBox));
     }
 }

@@ -118,7 +118,9 @@ namespace Emoji.Wpf
                 if (string.IsNullOrEmpty(Text))
                     UnicodeSequence = null;
                 else if (EmojiData.LookupByName.TryGetValue(Text.Trim(':'), out var emoji))
+                {
                     UnicodeSequence = emoji.Text;
+                }
                 else
                     UnicodeSequence = Text;
             }
